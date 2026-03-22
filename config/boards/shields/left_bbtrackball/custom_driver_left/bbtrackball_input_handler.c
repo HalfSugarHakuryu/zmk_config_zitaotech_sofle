@@ -37,7 +37,7 @@ LOG_MODULE_REGISTER(bbtrackball_input_handler, LOG_LEVEL_INF);
 
 /* ==== 状态 ==== */
 static bool moved = false;
-static bool space_pressed = false;
+static bool layer_1_held = false;
 static const struct device *trackball_dev_ref = NULL;
 static int dx_acc = 0;
 static int dy_acc = 0;
@@ -75,21 +75,21 @@ struct bbtrackball_data {
 /* ==== 外部接口 ==== */
 bool trackball_is_moving(void) { return moved; }
 
-/* ==== Space Listener ==== */
-static int space_listener_cb(const zmk_event_t *eh) {
+/* ==== Layer 1 Listener ==== */
+static int layer_1_listener_cb(const zmk_event_t *eh) {
     const struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
     if (!ev)
         return 0;
 
     if (ev->position == 60) {
-        space_pressed = ev->state;
-        LOG_INF("Space %s", space_pressed ? "HELD" : "RELEASED");
+        layer_1_held = ev->state;
+        LOG_INF("Layer 1 key %s", layer_1_held ? "HELD" : "RELEASED");
     }
     return 0;
 }
 
-ZMK_LISTENER(space_listener, space_listener_cb);
-ZMK_SUBSCRIPTION(space_listener, zmk_position_state_changed);
+ZMK_LISTENER(layer_1_listener, layer_1_listener_cb);
+ZMK_SUBSCRIPTION(layer_1_listener, zmk_position_state_changed);
 
 /* ==== GPIO 中断回调 ==== */
 static void dir_edge_cb(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
@@ -132,8 +132,8 @@ static void arrow_repeat_work_handler(struct k_work *work) {
     int dx = -dx_acc;
     int dy = -dy_acc;
 
-    /* === Space held → Scroll mode === */
-    if (space_pressed) {
+    /* === Layer 1 inactive -> scroll mode (layer 0) === */
+    if (!layer_1_held) {
         int scroll_x = dx;
         int scroll_y = dy;
 
@@ -163,8 +163,8 @@ static void report_work_handler(struct k_work *work) {
     if (dx_acc || dy_acc) {
         moved = true;
 
-        /* Space held → 禁止鼠标移动（只允许 scroll / arrow） */
-        if (!space_pressed) {
+        /* Layer 1 held -> regular mouse movement */
+        if (layer_1_held) {
             int dx = -dx_acc;
             int dy = -dy_acc;
             input_report_rel(dev, INPUT_REL_X, dx, false, K_FOREVER);
