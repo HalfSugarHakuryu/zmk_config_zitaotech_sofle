@@ -52,10 +52,10 @@ typedef struct {
 } DirInput;
 
 static DirInput dir_inputs[] = {
-    {DEVICE_DT_GET(GPIO0_DEV), LEFT_GPIO_PIN, 1, 0, +1},
-    {DEVICE_DT_GET(GPIO0_DEV), RIGHT_GPIO_PIN, 1, 0, -1},
-    {DEVICE_DT_GET(GPIO0_DEV), UP_GPIO_PIN, 1, 0, +1},
-    {DEVICE_DT_GET(GPIO1_DEV), DOWN_GPIO_PIN, 1, 0, -1},
+    {DEVICE_DT_GET(GPIO0_DEV), LEFT_GPIO_PIN, 1, 0, -1},
+    {DEVICE_DT_GET(GPIO0_DEV), RIGHT_GPIO_PIN, 1, 0, +1},
+    {DEVICE_DT_GET(GPIO0_DEV), UP_GPIO_PIN, 1, 0, -1},
+    {DEVICE_DT_GET(GPIO1_DEV), DOWN_GPIO_PIN, 1, 0, +1},
 };
 
 static struct gpio_callback gpio_cbs[ARRAY_SIZE(dir_inputs)];
@@ -134,8 +134,9 @@ static void arrow_repeat_work_handler(struct k_work *work) {
 
     /* === Layer 1 inactive -> scroll mode (layer 0) === */
     if (!layer_1_held) {
-        int scroll_x = dx;
-        int scroll_y = dy;
+        /* 只翻转滚轮方向，不影响按住层键后的常规鼠标移动方向 */
+        int scroll_x = -dx;
+        int scroll_y = -dy;
 
         input_report_rel(data->dev, INPUT_REL_HWHEEL, scroll_x, false, K_FOREVER);
         input_report_rel(data->dev, INPUT_REL_WHEEL, -scroll_y, true, K_FOREVER);
