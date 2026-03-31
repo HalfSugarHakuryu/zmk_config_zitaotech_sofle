@@ -52,10 +52,10 @@ typedef struct {
 } DirInput;
 
 static DirInput dir_inputs[] = {
-    {DEVICE_DT_GET(GPIO0_DEV), LEFT_GPIO_PIN, 1, 0, -1},
-    {DEVICE_DT_GET(GPIO0_DEV), RIGHT_GPIO_PIN, 1, 0, +1},
-    {DEVICE_DT_GET(GPIO0_DEV), UP_GPIO_PIN, 1, 0, -1},
-    {DEVICE_DT_GET(GPIO1_DEV), DOWN_GPIO_PIN, 1, 0, +1},
+    {DEVICE_DT_GET(GPIO0_DEV), LEFT_GPIO_PIN, 1, 0, +1},
+    {DEVICE_DT_GET(GPIO0_DEV), RIGHT_GPIO_PIN, 1, 0, -1},
+    {DEVICE_DT_GET(GPIO0_DEV), UP_GPIO_PIN, 1, 0, +1},
+    {DEVICE_DT_GET(GPIO1_DEV), DOWN_GPIO_PIN, 1, 0, -1},
 };
 
 static struct gpio_callback gpio_cbs[ARRAY_SIZE(dir_inputs)];
